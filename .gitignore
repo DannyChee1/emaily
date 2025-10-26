@@ -30,6 +30,7 @@ Thumbs.db
 .idea/
 *.sublime-*
 .vs/
+CLAUDE.md
 
 # Testing
 coverage/

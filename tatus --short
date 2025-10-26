@@ -1,0 +1,163 @@
+[1mdiff --git a/README.md b/README.md[m
+[1mindex 8c20f9a..df23368 100644[m
+[1m--- a/README.md[m
+[1m+++ b/README.md[m
+[36m@@ -1,110 +1,111 @@[m
+[31m-# Emaily - AI-Powered SMS Email Manager[m
+[32m+[m[32m# Emaily[m[41m[m
+ [m
+[31m-Text your way to inbox zero. Emaily is an AI agent that lets you manage your email through simple text messages.[m
+[32m+[m[32mAn autonomous AI agent leveraging OpenAI function calling and agentic workflows to manage email operations through natural language. Built with TypeScript, OpenAI integration, Gmail API, Google OAuth, and implements dynamic tool orchestration with context-aware decision making.[m[41m[m
+ [m
+[31m-> **👉 NEW HERE? Start with [START_HERE.md](./START_HERE.md) - Get running in 5 minutes!**[m
+[32m+[m[32m## Architecture[m[41m[m
+ [m
+[31m-## 🎯 What It Does[m
+[32m+[m[32m**Structure:**[m[41m[m
+[32m+[m[32m- **Agent:** Stateful loop with dynamic tool selection[m[41m[m
+[32m+[m[32m- **Function Calling Protocol:** LLM chains Gmail API operations based on conversational context[m[41m[m
+[32m+[m[32m- **Context:** Email retrieval with semantic understanding (search → read → analyze → act)[m[41m[m
+[32m+[m[32m- **OAuth 2.0:** Secure authentication with encrypted token management[m[41m[m
+[32m+[m[32m- **Batch Processing:** Grouping of similar operations with unique header preservation per recipient[m[41m[m
+ [m
+[31m-- **Read emails** - "Show me my unread emails"[m
+[31m-- **Send emails** - "Email john@company.com about the meeting"[m
+[31m-- **Search emails** - "Find emails from Sarah last week"[m
+[31m-- **Organize** - "Archive all newsletters"[m
+[31m-- **Smart lookup** - "Find the contact info for the recruiter at Google"[m
+[32m+[m[32mThe agent implements a **self-correcting execution loop** where the LLM observes tool outputs and organizes its function calling, enabling complex multi-step workflows from single natural language commands.[m[41m[m
+ [m
+[31m-## 🚀 Quick Start[m
+[31m-[m
+[31m-**Get started in 2 minutes!**[m
+[31m-[m
+[31m-### Minimal Setup (Test the AI Agent)[m
+[32m+[m[32m**Example Single-shot operations:**[m[41m[m
+[32m+[m[32m```[m[41m[m
+[32m+[m[32m"Reply to all linkedin emails with 'thanks for reaching out'"[m[41m[m
+[32m+[m[32m→ Search orchestration → Parallel email retrieval → Context analysis → Batch reply drafting → User confirmation → Execution[m[41m[m
+[32m+[m[32m```[m[41m[m
+ [m
+[31m-1. **Install dependencies**[m
+[32m+[m[32m### Some tools:[m[41m[m
+[32m+[m[32m- `search_emails`: Gmail API query orchestration with advanced filtering[m[41m[m
+[32m+[m[32m- `read_email`: Context retrieval with thread awareness[m[41m[m
+[32m+[m[32m- `send_email`: Async email dispatch with confirmation[m[41m[m
+[32m+[m[32m- `reply_to_email`: Thread-preserving reply with header injection[m[41m[m
+[32m+[m[32m- `batch_reply_emails`: Parallelized reply operations with unique recipient handling[m[41m[m
+[32m+[m[32m- `delete_emails`: Multi-entity deletion with confirmation gates[m[41m[m
+[32m+[m[32m- `archive_emails`: Bulk labelling via Gmail API[m[41m[m
+[32m+[m[32m- `label_emails`: Dynamic label creation and application[m[41m[m
+[32m+[m[32m- `star_emails`: Priority flagging operations[m[41m[m
+[32m+[m[32m- `mark_as_read`: Batch read state modification[m[41m[m
+[32m+[m[32m- `create_draft`: Deferred send with draft API[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m## Setup[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m1. **Install dependencies:**[m[41m[m
+ ```bash[m
+ npm install[m
+ ```[m
+ [m
+[31m-2. **Create `.env` file**[m
+[32m+[m[32m2. **Configure local environment:**[m[41m[m
+ ```env[m
+[31m-OPENAI_API_KEY=sk-your_key_here[m
+[31m-ENCRYPTION_KEY=any_random_32_character_string[m
+[32m+[m[32mOPENAI_API_KEY=your_openai_key          # GPT-4/3.5-turbo[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m# Security[m[41m[m
+[32m+[m[32mENCRYPTION_KEY=your_32_char_key         # AES-256-GCM token encryption[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m# Google OAuth 2.0[m[41m[m
+[32m+[m[32mGMAIL_CLIENT_ID=your_google_client_id[m[41m[m
+[32m+[m[32mGMAIL_CLIENT_SECRET=your_google_secret[m[41m[m
+[32m+[m[32mGMAIL_REDIRECT_URI=http://localhost:3000/auth/callback[m[41m[m
+[32m+[m[41m[m
+[32m+[m[32m# Test Credentials (optional)[m[41m[m
+[32m+[m[32mTEST_ACCESS_TOKEN=your_test_token[m[41m[m
+[32m+[m[32mTEST_REFRESH_TOKEN=your_refresh_token[m[41m[m
+ ```[m
+ [m
+[31m-3. **Test the agent**[m
+[32m+[m[32m3. **Run**[m[41m[m
+ ```bash[m
+ npm run test:agent[m
+ ```[m
+ [m
+[31m-That's it! You can now chat with the AI agent locally.[m
+[31m-[m
+[31m-**For full email integration**, see [QUICKSTART.md](./QUICKSTART.md) or [SETUP_GUIDE.md](./SETUP_GUIDE.md)[m
+[31m-[m
+[31m-### Full Production Setup[m
+[31m-[m
+[31m-See [PROJECT_FRAMEWORK.md](./PROJECT_FRAMEWORK.md) for:[m
+[31m-- Database setup (PostgreSQL)[m
+[31m-- SMS integration (Twilio)[m
+[31m-- Email OAuth (Gmail/Outlook)[m
+[31m-- Deployment options[m
+[31m-[m
+[31m-## 📱 How to Use[m
+[31m-[m
+[31m-1. **Register**: Text "START" to your Twilio number[m
+[31m-2. **Connect email**: Follow the link to connect your Gmail/Outlook[m
+[31m-3. **Start managing**: Text commands like:[m
+[31m-   - "Any new emails?"[m
+[31m-   - "Send email to boss@company.com: I'll be late tomorrow"[m
+[31m-   - "Find emails about project alpha"[m
+[31m-   - "Delete all emails from newsletter@spam.com"[m
+[31m-[m
+[31m-## 🏗️ Architecture[m
+[32m+[m[32mCurrent implementation runs standalone without requiring Twilio SMS infrastructure or PostgreSQL.[m[41m[m
+ [m
+[31m-See [PROJECT_FRAMEWORK.md](./PROJECT_FRAMEWORK.md) for complete architecture details.[m
+[32m+[m[32m## Project Structure[m[41m[m
+ [m
+ ```[m
+[31m-SMS (Twilio) → Backend (Node.js/Python) → AI (GPT-4) → Email APIs (Gmail/Outlook)[m
+[31m-                    ↓[m
+[31m-              Database (PostgreSQL) + Cache (Redis)[m
+[32m+[m[32msrc/[m[41m[m
+[32m+[m[32m├── services/[m[41m[m
+[32m+[m[32m│   ├── ai/[m[41m[m
+[32m+[m[32m│   │   ├── functionCallingAgent.ts[m[41m[m
+[32m+[m[32m│   │   ├── tools.ts[m[41m[m
+[32m+[m[32m│   │   └── intentClassifier.ts[m[41m[m
+[32m+[m[32m│   │[m[41m[m
+[32m+[m[32m│   ├── email/[m[41m[m
+[32m+[m[32m│   │   └── gmailService.ts[m[41m[m
+[32m+[m[32m│   │[m[41m[m
+[32m+[m[32m│   └── utils/[m[41m[m
+[32m+[m[32m│       ├── encryption.ts[m[41m[m
+[32m+[m[32m│       └── logger.ts[m[41m[m
+[32m+[m[32m│[m[41m[m
+[32m+[m[32m├── types/[m[41m[m
+[32m+[m[32m│   └── index.ts[m[41m[m
+[32m+[m[32m│[m[41m[m
+[32m+[m[32mtest-agent.ts[m[41m[m
+ ```[m
+ [m
+[31m-## 📚 Documentation[m
+[32m+[m[32m## Docker[m[41m[m
+ [m
+[31m-- [PROJECT_FRAMEWORK.md](./PROJECT_FRAMEWORK.md) - Complete feature set, architecture, and implementation guide[m
+[31m-- [API_DOCS.md](./API_DOCS.md) - API endpoints and integration details (coming soon)[m
+[31m-- [DEPLOYMENT.md](./DEPLOYMENT.md) - Production deployment guide (coming soon)[m
+[31m-[m
+[31m-## 🛣️ Roadmap[m
+[31m-[m
+[31m-- [x] Project planning and architecture[m
+[31m-- [ ] Week 1-2: Basic SMS handling + user auth[m
+[31m-- [ ] Week 3-4: Gmail integration + basic email ops[m
+[31m-- [ ] Week 5-6: AI agent with intent classification[m
+[31m-- [ ] Week 7-8: Advanced email operations[m
+[31m-- [ ] Week 9-10: Web intelligence and contact lookup[m
+[31m-- [ ] Week 11-12: Testing and polish[m
+[31m-- [ ] Week 13+: Production launch[m
+[31m-[m
+[31m-## 🔐 Security[m
+[31m-[m
+[31m-- All email credentials encrypted at rest (AES-256)[m
+[31m-- OAuth 2.0 for email provider access[m
+[31m-- TLS for all API communications[m
+[31m-

@@ -1,110 +1,110 @@
-# Emaily - AI-Powered SMS Email Manager
+# Emaily
 
-Text your way to inbox zero. Emaily is an AI agent that lets you manage your email through simple text messages.
+An autonomous AI agent leveraging OpenAI function calling and agentic workflows to manage email operations through natural language. Built with TypeScript, OpenAI integration, Gmail API, Google OAuth, and implements dynamic tool orchestration with context-aware decision making.
 
-> **👉 NEW HERE? Start with [START_HERE.md](./START_HERE.md) - Get running in 5 minutes!**
+## Architecture
 
-## 🎯 What It Does
+**Structure:**
+- **Agent:** Stateful loop with dynamic tool selection
+- **Function Calling Protocol:** LLM chains Gmail API operations based on conversational context
+- **Context:** Email retrieval with semantic understanding (search → read → analyze → act)
+- **OAuth 2.0:** Secure authentication with encrypted token management
+- **Batch Processing:** Grouping of similar operations with unique header preservation per recipient
 
-- **Read emails** - "Show me my unread emails"
-- **Send emails** - "Email john@company.com about the meeting"
-- **Search emails** - "Find emails from Sarah last week"
-- **Organize** - "Archive all newsletters"
-- **Smart lookup** - "Find the contact info for the recruiter at Google"
+The agent implements a **self-correcting execution loop** where the LLM observes tool outputs and organizes its function calling, enabling complex multi-step workflows from single natural language commands.
 
-## 🚀 Quick Start
+**Example Single-shot operations:**
+```
+"Reply to all linkedin emails with 'thanks for reaching out'"
+→ Search orchestration → Parallel email retrieval → Context analysis → Batch reply drafting → User confirmation → Execution
+```
 
-**Get started in 2 minutes!**
+### Some tools:
+- `search_emails`: Gmail API query orchestration with advanced filtering
+- `read_email`: Context retrieval with thread awareness
+- `send_email`: Async email dispatch with confirmation
+- `reply_to_email`: Thread-preserving reply with header injection
+- `batch_reply_emails`: Parallelized reply operations with unique recipient handling
+- `delete_emails`: Multi-entity deletion with confirmation gates
+- `archive_emails`: Bulk labelling via Gmail API
+- `label_emails`: Dynamic label creation and application
+- `star_emails`: Priority flagging operations
+- `mark_as_read`: Batch read state modification
+- `create_draft`: Deferred send with draft API
 
-### Minimal Setup (Test the AI Agent)
+## Setup
 
-1. **Install dependencies**
+1. **Install dependencies:**
 ```bash
 npm install
 ```
 
-2. **Create `.env` file**
+2. **Configure local environment:**
 ```env
-OPENAI_API_KEY=sk-your_key_here
-ENCRYPTION_KEY=any_random_32_character_string
+OPENAI_API_KEY=your_openai_key          # GPT-4/3.5-turbo
+
+# Security
+ENCRYPTION_KEY=your_32_char_key         # AES-256-GCM token encryption
+
+# Google OAuth 2.0
+GMAIL_CLIENT_ID=your_google_client_id
+GMAIL_CLIENT_SECRET=your_google_secret
+GMAIL_REDIRECT_URI=http://localhost:3000/auth/callback
+
+# Test Credentials (optional)
+TEST_ACCESS_TOKEN=your_test_token
+TEST_REFRESH_TOKEN=your_refresh_token
 ```
 
-3. **Test the agent**
+3. **Run**
 ```bash
 npm run test:agent
 ```
 
-That's it! You can now chat with the AI agent locally.
+Current implementation runs standalone without requiring Twilio SMS infrastructure or PostgreSQL.
 
-**For full email integration**, see [QUICKSTART.md](./QUICKSTART.md) or [SETUP_GUIDE.md](./SETUP_GUIDE.md)
-
-### Full Production Setup
-
-See [PROJECT_FRAMEWORK.md](./PROJECT_FRAMEWORK.md) for:
-- Database setup (PostgreSQL)
-- SMS integration (Twilio)
-- Email OAuth (Gmail/Outlook)
-- Deployment options
-
-## 📱 How to Use
-
-1. **Register**: Text "START" to your Twilio number
-2. **Connect email**: Follow the link to connect your Gmail/Outlook
-3. **Start managing**: Text commands like:
-   - "Any new emails?"
-   - "Send email to boss@company.com: I'll be late tomorrow"
-   - "Find emails about project alpha"
-   - "Delete all emails from newsletter@spam.com"
-
-## 🏗️ Architecture
-
-See [PROJECT_FRAMEWORK.md](./PROJECT_FRAMEWORK.md) for complete architecture details.
+## Project Structure
 
 ```
-SMS (Twilio) → Backend (Node.js/Python) → AI (GPT-4) → Email APIs (Gmail/Outlook)
-                    ↓
-              Database (PostgreSQL) + Cache (Redis)
+src/
+├── services/
+│   ├── ai/
+│   │   ├── functionCallingAgent.ts
+│   │   └── tools.ts
+│   │
+│   ├── email/
+│   │   └── gmailService.ts
+│   │
+│   └── utils/
+│       ├── encryption.ts
+│       └── logger.ts
+│
+├── types/
+│   └── index.ts
+│
+test-agent.ts
 ```
 
-## 📚 Documentation
+## Docker
 
-- [PROJECT_FRAMEWORK.md](./PROJECT_FRAMEWORK.md) - Complete feature set, architecture, and implementation guide
-- [API_DOCS.md](./API_DOCS.md) - API endpoints and integration details (coming soon)
-- [DEPLOYMENT.md](./DEPLOYMENT.md) - Production deployment guide (coming soon)
+```bash
+docker-compose up -d  #PostgreSQL + Redis + PGAdmin
+```
 
-## 🛣️ Roadmap
+Services:
+- PostgreSQL 15 (port 5432)
+- Redis 7 (port 6379)
+- PGAdmin (port 5050, optional)
+- Redis Commander (port 8081, optional)
+- OAuth 2.0
 
-- [x] Project planning and architecture
-- [ ] Week 1-2: Basic SMS handling + user auth
-- [ ] Week 3-4: Gmail integration + basic email ops
-- [ ] Week 5-6: AI agent with intent classification
-- [ ] Week 7-8: Advanced email operations
-- [ ] Week 9-10: Web intelligence and contact lookup
-- [ ] Week 11-12: Testing and polish
-- [ ] Week 13+: Production launch
+## Commands
 
-## 🔐 Security
+```bash
+npm run dev
+npm run build
+npm run test:agent
+```
 
-- All email credentials encrypted at rest (AES-256)
-- OAuth 2.0 for email provider access
-- TLS for all API communications
-- Rate limiting to prevent abuse
-- GDPR/CCPA compliant
 
-## 💰 Pricing
-
-- **Free**: 5 SMS/month - Perfect for trying it out
-- **Pro**: $9.99/month - Unlimited SMS, priority support, advanced features, multiple email accounts
-
-## 🤝 Contributing
-
-This is currently a private project. Contact the maintainer for collaboration opportunities.
-
-## 📄 License
-
-Proprietary - All rights reserved
-
-## 📧 Contact
-
-Questions? Email: [your-email]
 

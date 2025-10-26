@@ -7,7 +7,7 @@
 
 import dotenv from 'dotenv';
 import readline from 'readline';
-import { AgentController } from './src/services/ai/agentController';
+import { FunctionCallingAgent } from './src/services/ai/functionCallingAgent';
 import { encrypt } from './src/utils/encryption';
 import type { User, EmailAccount } from './src/types';
 
@@ -35,7 +35,7 @@ const mockEmailAccount: EmailAccount = {
 };
 
 async function main() {
-    console.log('🤖 Emaily AI Agent - Test Mode\n');
+    console.log('Emaily AI Agent - Test Mode\n');
     console.log('============================================');
     console.log('Testing the AI agent locally without SMS');
     console.log('Type your commands below (or "exit" to quit)');
@@ -43,43 +43,41 @@ async function main() {
 
     // Check for required env vars
     if (!process.env.OPENAI_API_KEY) {
-        console.error('❌ Error: OPENAI_API_KEY not found in environment');
+        console.error('Error: OPENAI_API_KEY not found in environment');
         console.log('Please add it to your .env file');
         process.exit(1);
     }
 
     if (!process.env.ENCRYPTION_KEY) {
-        console.error('❌ Error: ENCRYPTION_KEY not found in environment');
+        console.error('Error: ENCRYPTION_KEY not found in environment');
         console.log('Please add it to your .env file (any 32+ character string)');
         process.exit(1);
     }
 
     // Initialize agent
-    let agent: AgentController | { processMessage: (msg: string) => Promise<string> };
+    let agent: FunctionCallingAgent;
     try {
-        agent = new AgentController(mockUser, mockEmailAccount);
-        console.log('✅ Agent initialized successfully\n');
+        agent = new FunctionCallingAgent(mockUser, mockEmailAccount);
+        console.log('Function Calling Agent initialized successfully\n');
+        console.log('This agent can handle complex multi-step workflows!');
+        console.log('   Try: "reply to all linkedin emails with thanks"\n');
     } catch (error) {
-        console.error('❌ Failed to initialize agent:', error instanceof Error ? error.message : error);
+        console.error('Failed to initialize agent:', error instanceof Error ? error.message : error);
         console.log('\nNote: You need to set up Gmail OAuth tokens to test email operations.');
-        console.log('For now, you can test the AI intent classification.\n');
-        
-        // Continue without email service for testing
-        const { classifyIntent } = await import('./src/services/ai/intentClassifier');
-        agent = {
-            processMessage: async (message: string): Promise<string> => {
-                const intent = await classifyIntent(message);
-                return `Intent: ${intent.intent}\nConfidence: ${intent.confidence}\nEntities: ${JSON.stringify(intent.entities, null, 2)}`;
-            }
-        };
+        console.log('Please configure your .env file with the required tokens.\n');
+        process.exit(1);
     }
 
     console.log('Sample commands to try:');
-    console.log('  - "show me my emails"');
-    console.log('  - "send email to john@company.com about the meeting tomorrow"');
-    console.log('  - "find emails from Sarah"');
-    console.log('  - "delete this email"');
-    console.log('  - "help"\n');
+    console.log('  Simple:');
+    console.log('    - "show me my emails"');
+    console.log('    - "find emails from Sarah"');
+    console.log('  Complex (multi-step):');
+    console.log('    - "reply to all linkedin emails with \'thanks for reaching out\'"');
+    console.log('    - "archive all emails from last week about project X"');
+    console.log('    - "label all unread emails from my boss as urgent"');
+    console.log('  Advanced:');
+    console.log('    - "search for meeting emails, read them, and draft replies"\n');
 
     // Set up readline interface
     const rl = readline.createInterface({
@@ -99,18 +97,18 @@ async function main() {
         }
 
         if (message.toLowerCase() === 'exit' || message.toLowerCase() === 'quit') {
-            console.log('\n👋 Goodbye!');
+            console.log('\nGoodbye!');
             rl.close();
             process.exit(0);
         }
 
         try {
-            console.log('\n🤔 Processing...\n');
+            console.log('\nProcessing...\n');
             const response = await agent.processMessage(message);
             console.log('Bot:', response);
             console.log('\n' + '─'.repeat(50) + '\n');
         } catch (error) {
-            console.error('❌ Error:', error instanceof Error ? error.message : error);
+            console.error('Error:', error instanceof Error ? error.message : error);
             console.log('\n' + '─'.repeat(50) + '\n');
         }
 
@@ -118,7 +116,7 @@ async function main() {
     });
 
     rl.on('close', () => {
-        console.log('\n👋 Goodbye!');
+        console.log('\nGoodbye!');
         process.exit(0);
     });
 }

@@ -8,12 +8,12 @@ import { decrypt } from '../../utils/encryption';
 import type { Email, EmailAccount, SendEmailData, EmailOperationResult, GmailMessage } from '../../types';
 
 export class GmailService {
-    private account: EmailAccount;
+    private _account: EmailAccount;
     private oauth2Client: any;
     private gmail: any;
 
     constructor(emailAccount: EmailAccount) {
-        this.account = emailAccount;
+        this._account = emailAccount;
         this.oauth2Client = new google.auth.OAuth2(
             process.env.GMAIL_CLIENT_ID,
             process.env.GMAIL_CLIENT_SECRET,
@@ -186,15 +186,17 @@ export class GmailService {
         try {
             const { to, subject, body, cc = '', bcc = '' } = emailData;
             
-            const email = [
+            // Build email headers
+            const headers = [
                 `To: ${to}`,
-                cc ? `Cc: ${cc}` : '',
-                bcc ? `Bcc: ${bcc}` : '',
+                cc ? `Cc: ${cc}` : null,
+                bcc ? `Bcc: ${bcc}` : null,
                 `Subject: ${subject}`,
-                'Content-Type: text/plain; charset=utf-8',
-                '',
-                body
-            ].filter(line => line !== '').join('\n');
+                'Content-Type: text/plain; charset=utf-8'
+            ].filter(line => line !== null).join('\n');
+            
+            // Email format requires blank line between headers and body
+            const email = headers + '\n\n' + body;
 
             const encodedEmail = Buffer.from(email)
                 .toString('base64')
@@ -381,6 +383,217 @@ export class GmailService {
         } catch (error) {
             console.error('Error marking email as read:', error);
             throw new Error('Failed to mark email as read');
+        }
+    }
+
+    /**
+     * Get the email account
+     * @returns Email account
+     */
+    getAccount(): EmailAccount {
+        return this._account;
+    }
+
+    /**
+     * Create or get label ID
+     * @param labelName - Label name
+     * @returns Label ID
+     */
+    async getOrCreateLabel(labelName: string): Promise<string> {
+        try {
+            // List existing labels
+            const response = await this.gmail.users.labels.list({
+                userId: 'me'
+            });
+
+            const labels = response.data.labels || [];
+            const existingLabel = labels.find((l: any) => l.name === labelName);
+
+            if (existingLabel) {
+                return existingLabel.id!;
+            }
+
+            // Create new label
+            const createResponse = await this.gmail.users.labels.create({
+                userId: 'me',
+                requestBody: {
+                    name: labelName,
+                    labelListVisibility: 'labelShow',
+                    messageListVisibility: 'show'
+                }
+            });
+
+            return createResponse.data.id!;
+
+        } catch (error) {
+            console.error('Error managing label:', error);
+            throw new Error('Failed to manage label');
+        }
+    }
+
+    /**
+     * Apply label to emails
+     * @param messageIds - Array of message IDs
+     * @param labelName - Label name
+     * @returns Success status
+     */
+    async labelEmails(messageIds: string[], labelName: string): Promise<boolean> {
+        try {
+            const labelId = await this.getOrCreateLabel(labelName);
+
+            // Gmail API supports batch modify
+            await this.gmail.users.messages.batchModify({
+                userId: 'me',
+                requestBody: {
+                    ids: messageIds,
+                    addLabelIds: [labelId]
+                }
+            });
+
+            return true;
+
+        } catch (error) {
+            console.error('Error labeling emails:', error);
+            throw new Error('Failed to label emails');
+        }
+    }
+
+    /**
+     * Star emails
+     * @param messageIds - Array of message IDs
+     * @returns Success status
+     */
+    async starEmails(messageIds: string[]): Promise<boolean> {
+        try {
+            await this.gmail.users.messages.batchModify({
+                userId: 'me',
+                requestBody: {
+                    ids: messageIds,
+                    addLabelIds: ['STARRED']
+                }
+            });
+
+            return true;
+
+        } catch (error) {
+            console.error('Error starring emails:', error);
+            throw new Error('Failed to star emails');
+        }
+    }
+
+    /**
+     * Mark emails as read
+     * @param messageIds - Array of message IDs
+     * @returns Success status
+     */
+    async markAsReadBatch(messageIds: string[]): Promise<boolean> {
+        try {
+            await this.gmail.users.messages.batchModify({
+                userId: 'me',
+                requestBody: {
+                    ids: messageIds,
+                    removeLabelIds: ['UNREAD']
+                }
+            });
+
+            return true;
+
+        } catch (error) {
+            console.error('Error marking emails as read:', error);
+            throw new Error('Failed to mark emails as read');
+        }
+    }
+
+    /**
+     * Archive multiple emails
+     * @param messageIds - Array of message IDs
+     * @returns Success status
+     */
+    async archiveEmailsBatch(messageIds: string[]): Promise<boolean> {
+        try {
+            await this.gmail.users.messages.batchModify({
+                userId: 'me',
+                requestBody: {
+                    ids: messageIds,
+                    removeLabelIds: ['INBOX']
+                }
+            });
+
+            return true;
+
+        } catch (error) {
+            console.error('Error archiving emails:', error);
+            throw new Error('Failed to archive emails');
+        }
+    }
+
+    /**
+     * Delete multiple emails
+     * @param messageIds - Array of message IDs
+     * @returns Success status
+     */
+    async deleteEmailsBatch(messageIds: string[]): Promise<boolean> {
+        try {
+            // Gmail API doesn't have batch delete, so we do sequential
+            await Promise.all(
+                messageIds.map(id => this.gmail.users.messages.trash({
+                    userId: 'me',
+                    id
+                }))
+            );
+
+            return true;
+
+        } catch (error) {
+            console.error('Error deleting emails:', error);
+            throw new Error('Failed to delete emails');
+        }
+    }
+
+    /**
+     * Create an email draft
+     * @param emailData - Email data
+     * @returns Draft info
+     */
+    async createDraft(emailData: SendEmailData): Promise<{ id: string; message: string }> {
+        try {
+            const { to, subject, body, cc = '', bcc = '' } = emailData;
+            
+            // Build email headers
+            const headers = [
+                `To: ${to}`,
+                cc ? `Cc: ${cc}` : null,
+                bcc ? `Bcc: ${bcc}` : null,
+                `Subject: ${subject || '(no subject)'}`,
+                'Content-Type: text/plain; charset=utf-8'
+            ].filter(line => line !== null).join('\n');
+            
+            // Email format requires blank line between headers and body
+            const email = headers + '\n\n' + body;
+
+            const encodedEmail = Buffer.from(email)
+                .toString('base64')
+                .replace(/\+/g, '-')
+                .replace(/\//g, '_')
+                .replace(/=+$/, '');
+
+            const response = await this.gmail.users.drafts.create({
+                userId: 'me',
+                requestBody: {
+                    message: {
+                        raw: encodedEmail
+                    }
+                }
+            });
+
+            return {
+                id: response.data.id!,
+                message: `Draft created: ${subject || '(no subject)'}`
+            };
+
+        } catch (error) {
+            console.error('Error creating draft:', error);
+            throw new Error('Failed to create draft');
         }
     }
 }

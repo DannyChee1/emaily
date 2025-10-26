@@ -62,37 +62,6 @@ export interface EmailOperationResult {
   error?: string;
 }
 
-// AI Intent types
-export type IntentType =
-  | 'READ_EMAIL'
-  | 'SEND_EMAIL'
-  | 'REPLY_EMAIL'
-  | 'SEARCH_EMAIL'
-  | 'DELETE_EMAIL'
-  | 'ARCHIVE_EMAIL'
-  | 'LOOKUP_CONTACT'
-  | 'HELP'
-  | 'CONFIRM'
-  | 'CANCEL'
-  | 'OTHER';
-
-export interface IntentResult {
-  intent: IntentType;
-  confidence: number;
-  entities: {
-    email_address?: string;
-    person_name?: string;
-    subject?: string;
-    content?: string;
-    search_query?: string;
-    company?: string;
-    time_range?: string;
-    [key: string]: string | undefined;
-  };
-  needs_context?: boolean;
-  error?: string;
-}
-
 // Context types
 export interface ConversationContext {
   current_email: Email | null;
