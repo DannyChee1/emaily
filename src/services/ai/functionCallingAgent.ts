@@ -24,8 +24,8 @@ export class FunctionCallingAgent {
     private _user: User;
     private _emailAccount: EmailAccount;
     private emailService: GmailService;
-    private conversationHistory: ChatCompletionMessageParam[] = [];
-    private pendingConfirmations: Map<string, PendingConfirmation> = new Map();
+    public conversationHistory: ChatCompletionMessageParam[] = [];
+    public pendingConfirmations: Map<string, PendingConfirmation> = new Map();
 
     constructor(user: User, emailAccount: EmailAccount) {
         this._user = user;
@@ -181,10 +181,10 @@ export class FunctionCallingAgent {
                         result = { error: `Unknown tool: ${toolName}` };
                 }
                 
-                console.log(`  ✓ Result:`, JSON.stringify(result).substring(0, 150));
+                console.log(`  * Result:`, JSON.stringify(result).substring(0, 150));
                 
             } catch (error) {
-                console.error(`  ✗ Error:`, error);
+                console.error(`  * Error:`, error);
                 result = { 
                     error: error instanceof Error ? error.message : 'Unknown error',
                     success: false
@@ -223,16 +223,24 @@ export class FunctionCallingAgent {
     private async tool_readEmail(args: { email_id: string }) {
         const email = await this.emailService.getEmailDetails(args.email_id);
         
+        // Clean email body: remove excessive whitespace while preserving paragraphs
+        const cleanedBody = email.body
+            .trim()
+            .replace(/\n{3,}/g, '\n\n')  // Max 2 consecutive newlines
+            .replace(/[ \t]+/g, ' ')      // Collapse spaces/tabs
+            .substring(0, 1000);
+        
         return {
             success: true,
             email: {
                 id: email.id,
                 threadId: email.threadId,
                 from: email.from,
+                
                 to: email.to,
                 subject: email.subject,
                 date: email.date,
-                body: email.body.substring(0, 1000), // Limit body length for token efficiency
+                body: cleanedBody,
                 snippet: email.snippet
             }
         };
